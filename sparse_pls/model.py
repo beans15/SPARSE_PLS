@@ -1,17 +1,17 @@
-import numpy as np
-import pandas as pd
+import logging
 import pickle
 from typing import Tuple
-from sklearn.base import BaseEstimator, RegressorMixin, clone
-from sklearn.utils.validation import check_is_fitted, check_array, check_X_y
-from sklearn.model_selection import ParameterGrid, check_cv
-from scipy.linalg import svd
-from joblib import Parallel, delayed
-from sklearn.metrics import check_scoring
-from sklearn.base import is_classifier
-import logging
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from joblib import Parallel, delayed
 from preprocessing import DataPreprocessor
+from scipy.linalg import svd
+from sklearn.base import BaseEstimator, RegressorMixin, clone, is_classifier
+from sklearn.metrics import check_scoring
+from sklearn.model_selection import ParameterGrid, check_cv
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -194,7 +194,7 @@ class SparsePLS(BaseEstimator, RegressorMixin):
             Y,
             accept_sparse=False,
             dtype=None,
-            force_all_finite=True,
+            ensure_all_finite=True,
             multi_output=True,
             y_numeric=True,
         )
@@ -562,10 +562,15 @@ class SparsePLS(BaseEstimator, RegressorMixin):
         from sklearn.model_selection import cross_val_score
 
         # Validate inputs
-        X, Y = check_array(
-            X, accept_sparse=False, dtype=None, force_all_finite=True
-        ), check_array(
-            Y, accept_sparse=False, dtype=None, force_all_finite=True, ensure_2d=False
+        X, Y = (
+            check_array(X, accept_sparse=False, dtype=None, ensure_all_finite=True),
+            check_array(
+                Y,
+                accept_sparse=False,
+                dtype=None,
+                ensure_all_finite=True,
+                ensure_2d=False,
+            ),
         )
 
         # Create parameter grid
@@ -623,7 +628,7 @@ class SparsePLS(BaseEstimator, RegressorMixin):
             for i, params in enumerate(param_combinations):
                 if verbose > 0:
                     logger.info(
-                        f"[{i+1}/{len(param_combinations)}] Evaluating: {params}"
+                        f"[{i + 1}/{len(param_combinations)}] Evaluating: {params}"
                     )
                 result = evaluate_params(params)
                 results.append(result)
